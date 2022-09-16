@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, GatewayIntentBits, EmbedBuilder} = require('discord.js');
+const { Client, Collection, GatewayIntentBits, EmbedBuilder, ActivityType } = require('discord.js');
 const { token } = require('./config.json');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -17,6 +17,8 @@ for (const file of commandFiles) {
 
 client.once('ready', () => {
     console.log('Ready!');
+    client.user.setPresence({ activities: [{ name: 'activity' }], status: 'online' });
+
 });
 
 client.on('interactionCreate', async interaction => {
