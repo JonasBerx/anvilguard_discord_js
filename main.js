@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, EmbedBuilder, ActivityType } = require('discord.js');
-const { token } = require('./config.json');
+const { token,reimburseChannel } = require('./config.json');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -20,6 +20,7 @@ client.once('ready', () => {
     client.user.setPresence({ activities: [{ name: 'EverlookWoW' }], status: 'online' });
 
 });
+
 
 client.on('interactionCreate', async interaction => {
     if (!interaction.isModalSubmit()) return;
@@ -44,7 +45,7 @@ client.on('interactionCreate', async interaction => {
             );
         }
         // Send message to Thane channel to trace the requests that get sent in.
-        client.channels.cache.get('1020469754470871092').send({embeds: [reimburseEmbed]});
+        client.channels.cache.get(reimburseChannel).send({embeds: [reimburseEmbed]});
         await interaction.reply({ content: 'Your submission was received successfully!' });
     }
 });
