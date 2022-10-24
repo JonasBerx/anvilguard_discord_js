@@ -20,12 +20,13 @@ tooltip_colors= {
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('tooltip')
+        .setName('find')
         .setDescription('Finds an item in the WoW Classic database.')
         .addStringOption(option =>
-            option.setName("text")
+            option.setName("item-name")
                 .setDescription("The name of the item you're looking for")
-                .setRequired(true)),
+                .setRequired(true)
+                .setAutocomplete(true)),
     async execute(interaction) {
         const item = interaction.options.getString("text")
 
@@ -33,7 +34,7 @@ module.exports = {
         const found_item = items.filter((i) => i.name === item)[0]
         let tooltip = found_item.tooltip
 
-        wowhead_url = 'https://classic.wowhead.com/item=' +
+        let wowhead_url = 'https://classic.wowhead.com/item=' +
             (found_item.itemId).toString()
         // https://wow.zamimg.com/images/wow/icons/large/
         icon_url = (found_item.icon).toString()
@@ -45,7 +46,6 @@ module.exports = {
             .setColor(tooltip_colors[(tooltip[0].format).toUpperCase()])
             .setURL(wowhead_url)
             .setThumbnail(icon_url)
-        console.log(found_item)
         // switch (found_item.class){
         //     case "Weapon":
         let value_string = ''

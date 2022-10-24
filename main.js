@@ -3,6 +3,7 @@ const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, EmbedBuilder, ActivityType } = require('discord.js');
 const { token } = require('./config.json');
 
+
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
@@ -26,7 +27,6 @@ client.on('interactionCreate', async interaction => {
     if (interaction.customId === 'reimburseModal') {
         const costs = interaction.fields.getTextInputValue('costs');
         const costs_context = interaction.fields.getTextInputValue('costs_context');
-        console.log({costs_context, costs})
         const reimburseEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
             .setTitle(`Reimburse request by: ${interaction.user.username}`)
@@ -47,6 +47,23 @@ client.on('interactionCreate', async interaction => {
         client.channels.cache.get('1020469754470871092').send({embeds: [reimburseEmbed]});
         await interaction.reply({ content: 'Your submission was received successfully!' });
     }
+    if (interaction.customId === 'bountyModal') {
+        const bounty_name = interaction.fields.getTextInputValue('target_name');
+        const bounty_race = interaction.fields.getTextInputValue('target_race');
+        const bounty_reward = interaction.fields.getTextInputValue('target_race');
+
+        const bountyEmbed = new EmbedBuilder()
+            .setColor(0x0099FF)
+            .setTitle(`Bounty requested by: ${interaction.user.username}`)
+            .addFields(
+                {name:"Target name", value:bounty_name, inline:false},
+                     {name:"Target race", value:bounty_race, inline:false},
+                     {name:"Bounty reward", value:bounty_reward, inline:false},
+            );
+
+        client.channels.cache.get('1015742051595329717').send({embeds: [bountyEmbed]});
+        await interaction.reply({ content: '' });
+    }
 });
 
 client.on('interactionCreate', async interaction => {
@@ -65,3 +82,4 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.login(token);
+
