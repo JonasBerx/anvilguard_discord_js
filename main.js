@@ -34,6 +34,7 @@ client.on('interactionCreate', async interaction => {
     if (interaction.customId === 'reimburseModal') {
         const costs = interaction.fields.getTextInputValue('costs');
         const costs_context = interaction.fields.getTextInputValue('costs_context');
+        console.log({costs_context, costs})
         const reimburseEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
             .setTitle(`Reimburse request by: ${interaction.user.username}`)
@@ -66,7 +67,7 @@ client.on('interactionCreate', async interaction => {
         client.channels.cache.get(reimbursement_channel).send({embeds: [reimburseEmbed], components: [row]});
         await interaction.reply({ content: 'Your submission was received successfully!' });
 
-        const buttonFilter = i => i.customId === 'success' || i.customId==="cancelled" && i.user.id in access_to_buttons;
+        const buttonFilter = i => i.customId === 'reimburse_success' || i.customId==="reimburse_cancelled" && i.user.id in access_to_buttons;
         const collector = client.channels.cache.get(reimbursement_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
 
         collector.on('collect', async i => {
@@ -116,7 +117,7 @@ client.on('interactionCreate', async interaction => {
         client.channels.cache.get(bounty_channel).send({embeds: [bountyEmbed], components:[row]});
         await interaction.reply({content: 'Bounty has successfully been marked.'});
 
-        const buttonFilter = i => i.customId === 'success' || i.customId==="cancelled" && i.user.id in access_to_buttons;
+        const buttonFilter = i => i.customId === 'bounty_success' || i.customId==="bounty_cancelled" && i.user.id in access_to_buttons;
         const collector = client.channels.cache.get(bounty_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
 
         collector.on('collect', async i => {
@@ -163,7 +164,7 @@ client.on('interactionCreate', async interaction => {
         client.channels.cache.get(guildbank_channel).send({embeds: [materialEmbed], components: [row]});
         await interaction.reply({ content: 'Request is being processed.' });
 
-        const buttonFilter = i => i.customId === 'success' || i.customId==="cancelled" && i.user.id in access_to_buttons;
+        const buttonFilter = i => i.customId === 'material_success' || i.customId==="material_cancelled" && i.user.id in access_to_buttons;
         const collector = client.channels.cache.get(guildbank_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
 
         collector.on('collect', async i => {
@@ -199,8 +200,9 @@ client.on('interactionCreate', async interaction => {
 
 client.on('interactionCreate', async (button) => {
     if (!button.isButton()) return;
+    console.log(button.user.id in access_to_buttons)
     if (!button.user.id in access_to_buttons) return;
-    console.log(button.message.components[0].components[0])
+    // console.log(button.message.components[0].components[0])
     if (button.customId === "reimburse_cancelled") {
         button.message.components[0].components[0].data.disabled = true
         await button.update({ content: '**Denied**', components: [] });
