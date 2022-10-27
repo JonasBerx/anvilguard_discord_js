@@ -3,11 +3,11 @@ const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, EmbedBuilder, ActivityType, Events, Partials, channelLink,
     ActionRowBuilder, ButtonBuilder, ButtonStyle,
 } = require('discord.js');
-const { token, access_to_buttons, bounty_channel, guildbank_channel, reimbursement_channel } = require('./config.json');
+const { token, access_to_buttons, bounty_channel, guildbank_channel, reimbursement_channel, welcome_channel } = require('./config.json');
 
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildMembers],
     partials: [Partials.Message, Partials.Channel, Partials.Reaction], });
 
 client.commands = new Collection();
@@ -24,6 +24,19 @@ client.once('ready', () => {
     console.log('Ready!');
     client.user.setPresence({ activities: [{ name: 'EverlookWoW' }], status: 'online' });
 
+});
+
+client.on('guildMemberAdd', async member => {
+    console.log(member)
+
+    let member_id = member.user.id
+    const tavern_channel = '982689005072187414'
+    const welcome_channel = '987423966710861904'
+    const bot_welcome_channel = '1035211574488596622'
+    const announcements_channel = '992836933942259813'
+    let ch = member.guild.channels.cache.get(bot_welcome_channel)
+    let welcome_str = `Well met <@${member.id}>! Welcome to **The Anvilguard**!\nMake sure to check the ${member.guild.channels.cache.get(welcome_channel).toString()} and ${member.guild.channels.cache.get(announcements_channel).toString()} first! \n\nCome join us in the ${member.guild.channels.cache.get(tavern_channel).toString()}`
+    await member.guild.channels.cache.get(bot_welcome_channel).send(welcome_str);
 });
 
 
