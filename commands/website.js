@@ -6,7 +6,7 @@ module.exports = {
         .setDescription('Replies you the URL to the guild website'),
     async execute(interaction) {
         return interaction.reply({
-            content:'http website is being built . com',
+            content:'https://theanvilguard.com',
             ephemeral: true
         });
     },
