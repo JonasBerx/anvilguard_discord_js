@@ -34,7 +34,7 @@ module.exports = {
             .setCustomId('target_reward')
             // The label is the prompt the user sees for this input
             .setLabel("Extra info; Reward / last seen?")
-            .setRequired(false)
+            .setRequired(true)
             .setPlaceholder("You get a kiss from me / last seen in Hillsbrad")
             // Short means only a single line of text
             .setStyle(TextInputStyle.Paragraph);

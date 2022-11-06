@@ -84,12 +84,12 @@ client.on('interactionCreate', async interaction => {
         const collector = client.channels.cache.get(reimbursement_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
 
         collector.on('collect', async i => {
-            if (i.customId === 'reimburse_success') {
+            if (i.customId === 'reimburse_success' && access_to_buttons.includes(interaction.user.id)) {
                 row.components[0].setDisabled(true);
                 row.components[1].setDisabled(true);
                 await i.update({ content: '**Approved**', components: [] });
             }
-            if (i.customId === 'reimburse_cancelled') {
+            if (i.customId === 'reimburse_cancelled' && access_to_buttons.includes(interaction.user.id)) {
                 row.components[0].setDisabled(true);
                 row.components[1].setDisabled(true);
                 await i.update({ content: '**Denied**', components: [] });
@@ -113,7 +113,7 @@ client.on('interactionCreate', async interaction => {
                 {name: "Target race", value: bounty_race, inline: false},
                 {name: "Extra info; Reward / last seen?", value: bounty_reward, inline: false},
             )
-            .setFooter({text: "Loremaster Hendrik", iconURL: 'https://i.imgur.com/vYQlnnA.png'})
+            .setFooter({text: "Loremaster Hendrik", iconURL: 'https://i.imgur.com/vYQlnnA.png'});
 
         const row = new ActionRowBuilder()
             .addComponents(
@@ -130,16 +130,16 @@ client.on('interactionCreate', async interaction => {
         client.channels.cache.get(bounty_channel).send({embeds: [bountyEmbed], components:[row]});
         await interaction.reply({content: 'Bounty has successfully been marked.'});
 
-        const buttonFilter = i => i.customId === 'bounty_success' || i.customId==="bounty_cancelled" && i.user.id in access_to_buttons;
+        const buttonFilter = i => i.customId === 'bounty_success' || i.customId==="bounty_cancelled" && access_to_buttons.includes(interaction.user.id);
         const collector = client.channels.cache.get(bounty_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
 
         collector.on('collect', async i => {
-            if (i.customId === 'bounty_success') {
+            if (i.customId === 'bounty_success' && access_to_buttons.includes(interaction.user.id)) {
                 row.components[0].setDisabled(true);
                 row.components[1].setDisabled(true);
                 await i.update({ content: '**Completed**', components: [] });
             }
-            if (i.customId === 'bounty_cancelled') {
+            if (i.customId === 'bounty_cancelled' && access_to_buttons.includes(interaction.user.id)) {
                 row.components[0].setDisabled(true);
                 row.components[1].setDisabled(true);
                 await i.update({ content: '**Cancelled**', components: [] });
@@ -182,12 +182,12 @@ client.on('interactionCreate', async interaction => {
 
         collector.on('collect', async i => {
             console.log(i.user.roles)
-            if (i.customId === 'material_success') {
+            if (i.customId === 'material_success' && access_to_buttons.includes(interaction.user.id)) {
                 row.components[0].setDisabled(true);
                 row.components[1].setDisabled(true);
                 await i.update({ content: '**Approved**', components: [] });
             }
-            if (i.customId === 'material_cancelled') {
+            if (i.customId === 'material_cancelled' && access_to_buttons.includes(interaction.user.id)) {
                 row.components[0].setDisabled(true);
                 row.components[1].setDisabled(true);
                 await i.update({ content: '**Denied**', components: [] });
@@ -213,9 +213,11 @@ client.on('interactionCreate', async interaction => {
 
 client.on('interactionCreate', async (button) => {
     if (!button.isButton()) return;
-    console.log(button.user.id in access_to_buttons)
-    if (!button.user.id in access_to_buttons) return;
-    // console.log(button.message.components[0].components[0])
+    console.log(access_to_buttons.includes(button.user.id))
+    console.log(button.member.roles.find( r => r.name === 'Thane'))
+    if (!access_to_buttons.includes(button.user.id)) return;
+    if (!button.member.roles.find( r => r.name === 'Thane')) return;
+
     if (button.customId === "reimburse_cancelled") {
         button.message.components[0].components[0].data.disabled = true
         await button.update({ content: '**Denied**', components: [] });
