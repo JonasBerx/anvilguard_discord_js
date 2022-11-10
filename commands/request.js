@@ -1,4 +1,9 @@
-const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder} = require('discord.js');
+const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
+    EmbedBuilder,
+    ButtonBuilder,
+    ButtonStyle
+} = require('discord.js');
+const {guildbank_channel, access_to_buttons} = require("../config.json");
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("request")
@@ -41,3 +46,54 @@ module.exports = {
         await interaction.showModal(modal);
     },
 }
+
+client.on('interactionCreate', async interaction => {
+    if (interaction.customId === 'gbrequestModal') {
+        const materials = interaction.fields.getTextInputValue('mat_description');
+        const justification = interaction.fields.getTextInputValue('mat_justification');
+
+        const materialEmbed = new EmbedBuilder()
+            .setColor(0x0099FF)
+            .setAuthor({name:`Request by: ${interaction.user.username}`, iconURL:'https://imgur.com/vYQlnnA.png'})
+            .setTitle(`Guildbank URL`)
+            .setFooter({text: "Loremaster Hendrik", iconURL:'https://i.imgur.com/vYQlnnA.png'})
+            .setThumbnail('https://wow.zamimg.com/uploads/blog/images/17231-wow-classic-goldmaking-guide-best-professions-farming-spots-auction-house.jpg')
+            .setURL('https://docs.google.com/spreadsheets/d/1e4ZP62ybJmjpoWk8mVjgvxoQhOP-ldenVuRQy6-62uY/edit?usp=sharing\'')
+            .addFields(
+                {name:"Request materials", value:materials, inline:false},
+                {name:"Justification | Optional", value:justification, inline:false},
+            );
+
+        const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId('material_success')
+                    .setLabel('Approved')
+                    .setStyle(ButtonStyle.Success),
+                new ButtonBuilder()
+                    .setCustomId('material_cancelled')
+                    .setLabel('Denied')
+                    .setStyle(ButtonStyle.Danger)
+            );
+
+        client.channels.cache.get(guildbank_channel).send({embeds: [materialEmbed], components: [row]});
+        await interaction.reply({ content: 'Request is being processed.' });
+
+        const buttonFilter = i => i.customId === 'material_success' || i.customId==="material_cancelled" && i.user.id in access_to_buttons;
+        const collector = client.channels.cache.get(guildbank_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
+
+        collector.on('collect', async i => {
+            console.log(i.user.roles)
+            if (i.customId === 'material_success' && access_to_buttons.includes(interaction.user.id)) {
+                row.components[0].setDisabled(true);
+                row.components[1].setDisabled(true);
+                await i.update({ content: '**Approved**', components: [] });
+            }
+            if (i.customId === 'material_cancelled' && access_to_buttons.includes(interaction.user.id)) {
+                row.components[0].setDisabled(true);
+                row.components[1].setDisabled(true);
+                await i.update({ content: '**Denied**', components: [] });
+            }
+        });
+    }
+})

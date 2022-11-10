@@ -1,4 +1,9 @@
-const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder} = require('discord.js');
+const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
+    EmbedBuilder,
+    ButtonBuilder,
+    ButtonStyle
+} = require('discord.js');
+const {reimbursement_channel, access_to_buttons} = require("../config.json");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -43,3 +48,61 @@ module.exports = {
         await interaction.showModal(modal);
     },
 }
+
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isModalSubmit()) return;
+    if (interaction.customId === 'reimburseModal') {
+        const costs = interaction.fields.getTextInputValue('costs');
+        const costs_context = interaction.fields.getTextInputValue('costs_context');
+        console.log({costs_context, costs})
+        const reimburseEmbed = new EmbedBuilder()
+            .setColor(0x0099FF)
+            .setTitle(`Reimburse request by: ${interaction.user.username}`)
+            .addFields(
+                {name: "Amount", value: costs, inline: false},
+            );
+        if (costs_context.trim() !== "") {
+            reimburseEmbed.addFields(
+                {name: "Context", value: costs_context, inline: false}
+            );
+        } else {
+            reimburseEmbed.addFields(
+                {name: "Context", value: "Not provided", inline: false}
+            );
+        }
+        const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId('reimburse_success')
+                    .setLabel('Approved')
+                    .setStyle(ButtonStyle.Success),
+                new ButtonBuilder()
+                    .setCustomId('reimburse_cancelled')
+                    .setLabel('Denied')
+                    .setStyle(ButtonStyle.Danger)
+            );
+
+        // Send message to Thane channel to trace the requests that get sent in.
+        client.channels.cache.get(reimbursement_channel).send({embeds: [reimburseEmbed], components: [row]});
+        await interaction.reply({content: 'Your submission was received successfully!'});
+
+        const buttonFilter = i => i.customId === 'reimburse_success' || i.customId === "reimburse_cancelled" && i.user.id in access_to_buttons;
+        const collector = client.channels.cache.get(reimbursement_channel).createMessageComponentCollector({
+            buttonFilter,
+            time: 15000
+        });
+
+        collector.on('collect', async i => {
+            if (i.customId === 'reimburse_success' && access_to_buttons.includes(interaction.user.id)) {
+                row.components[0].setDisabled(true);
+                row.components[1].setDisabled(true);
+                await i.update({content: '**Approved**', components: []});
+            }
+            if (i.customId === 'reimburse_cancelled' && access_to_buttons.includes(interaction.user.id)) {
+                row.components[0].setDisabled(true);
+                row.components[1].setDisabled(true);
+                await i.update({content: '**Denied**', components: []});
+            }
+        });
+    }
+})
