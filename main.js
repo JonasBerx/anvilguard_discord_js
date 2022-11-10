@@ -213,10 +213,7 @@ client.on('interactionCreate', async interaction => {
 
 client.on('interactionCreate', async (button) => {
     if (!button.isButton()) return;
-    console.log(access_to_buttons.includes(button.user.id))
-    console.log(button.member.roles.find( r => r.name === 'Thane'))
     if (!access_to_buttons.includes(button.user.id)) return;
-    if (!button.member.roles.find( r => r.name === 'Thane')) return;
 
     if (button.customId === "reimburse_cancelled") {
         button.message.components[0].components[0].data.disabled = true
