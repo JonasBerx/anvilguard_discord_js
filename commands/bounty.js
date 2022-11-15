@@ -3,7 +3,6 @@ const { SlashCommandBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, Act
     ButtonBuilder,
     ButtonStyle
 } = require('discord.js');
-const {createHash} = require('crypto')
 const {bounty_channel, access_to_buttons} = require("../config.json");
 
 module.exports = {
@@ -112,11 +111,7 @@ client.on('interactionCreate', async interaction => {
                     .setLabel('Cancelled')
                     .setStyle(ButtonStyle.Danger)
             );
-        // TODO Database add
 
-
-
-        console.log(bounty_id)
         const SQL = `INSERT INTO bounties(bounty_id, completed, author, target, race, info) VALUES ('${bounty_id}', FALSE, '${author}', '${bounty_name}', '${bounty_race}', '${bounty_reward}')`;
 
         pool.getConnection(function (err, conn) {
@@ -162,11 +157,9 @@ client.on('interactionCreate', async interaction => {
                 }
             }
             if (!(access_to_buttons.indexOf(interaction.user.id) > -1)) {
-
                 console.log("Should get message blblbl");
                 await i.deferUpdate();
             }
-
         });
     }
 })

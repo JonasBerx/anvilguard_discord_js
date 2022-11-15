@@ -52,6 +52,22 @@ client.on('interactionCreate', async interaction => {
         const materials = interaction.fields.getTextInputValue('mat_description');
         const justification = interaction.fields.getTextInputValue('mat_justification');
 
+        String.prototype.hashCode = function () {
+            var hash = 0,
+                i, chr;
+            if (this.length === 0) return hash;
+            for (i = 0; i < this.length; i++) {
+                chr = this.charCodeAt(i);
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
+        }
+
+        request_id = Math.abs((interaction.createdAt.toUTCString()).hashCode() + (materials + justification).hashCode())
+        author = interaction.user.id
+
+
         const materialEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
             .setAuthor({name:`Request by: ${interaction.user.username}`, iconURL:'https://imgur.com/vYQlnnA.png'})
@@ -62,38 +78,51 @@ client.on('interactionCreate', async interaction => {
             .addFields(
                 {name:"Request materials", value:materials, inline:false},
                 {name:"Justification | Optional", value:justification, inline:false},
-            );
+                {name: "Request ID", value: request_id.toString(), inline: false},
+            )
+        .setFooter({text: `Loremaster Hendrik`, iconURL: 'https://i.imgur.com/vYQlnnA.png'});
 
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('material_success')
-                    .setLabel('Approved')
-                    .setStyle(ButtonStyle.Success),
-                new ButtonBuilder()
-                    .setCustomId('material_cancelled')
-                    .setLabel('Denied')
-                    .setStyle(ButtonStyle.Danger)
-            );
+        // const row = new ActionRowBuilder()
+        //     .addComponents(
+        //         new ButtonBuilder()
+        //             .setCustomId('material_success')
+        //             .setLabel('Approved')
+        //             .setStyle(ButtonStyle.Success),
+        //         new ButtonBuilder()
+        //             .setCustomId('material_cancelled')
+        //             .setLabel('Denied')
+        //             .setStyle(ButtonStyle.Danger)
+        //     );
 
-        client.channels.cache.get(guildbank_channel).send({embeds: [materialEmbed], components: [row]});
+        client.channels.cache.get(guildbank_channel).send({embeds: [materialEmbed]});
         await interaction.reply({ content: 'Request is being processed.' });
 
-        const buttonFilter = i => i.customId === 'material_success' || i.customId==="material_cancelled" && i.user.id in access_to_buttons;
-        const collector = client.channels.cache.get(guildbank_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
+        const SQL = `INSERT INTO gb_requests(request_id, completed, author, materials, info) VALUES ('${request_id}', FALSE,'${author}','${materials}', '${justification}')`;
 
-        collector.on('collect', async i => {
-            console.log(i.user.roles)
-            if (i.customId === 'material_success' && access_to_buttons.includes(interaction.user.id)) {
-                row.components[0].setDisabled(true);
-                row.components[1].setDisabled(true);
-                await i.update({ content: '**Approved**', components: [] });
-            }
-            if (i.customId === 'material_cancelled' && access_to_buttons.includes(interaction.user.id)) {
-                row.components[0].setDisabled(true);
-                row.components[1].setDisabled(true);
-                await i.update({ content: '**Denied**', components: [] });
-            }
-        });
+        pool.getConnection(function (err, conn) {
+            if (err) return console.log(err);
+            conn.query(SQL, function (err) {
+                if (err) throw err;
+                console.log("Bounty logged in DB")
+            });
+        })
+
+
+        // const buttonFilter = i => i.customId === 'material_success' || i.customId==="material_cancelled" && i.user.id in access_to_buttons;
+        // const collector = client.channels.cache.get(guildbank_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
+
+        // collector.on('collect', async i => {
+        //     console.log(i.user.roles)
+        //     if (i.customId === 'material_success' && access_to_buttons.includes(interaction.user.id)) {
+        //         row.components[0].setDisabled(true);
+        //         row.components[1].setDisabled(true);
+        //         await i.update({ content: '**Approved**', components: [] });
+        //     }
+        //     if (i.customId === 'material_cancelled' && access_to_buttons.includes(interaction.user.id)) {
+        //         row.components[0].setDisabled(true);
+        //         row.components[1].setDisabled(true);
+        //         await i.update({ content: '**Denied**', components: [] });
+        //     }
+        // });
     }
 })

@@ -21,11 +21,17 @@ pool.getConnection(function(err, conn) {
     // No error found?
     console.log(`MySQL has been connected!`);
 
-    var SQL = "CREATE TABLE IF NOT EXISTS bounties (bounty_id VARCHAR(16) PRIMARY KEY, completed BOOLEAN NOT NULL, author VARCHAR(255) NOT NULL, target VARCHAR(255) NOT NULL, race VARCHAR(25) NOT NULL, info VARCHAR(4000) NOT NULL)";
+    var SQL1 = "CREATE TABLE IF NOT EXISTS bounties (bounty_id VARCHAR(16) PRIMARY KEY, completed BOOLEAN NOT NULL, author VARCHAR(255) NOT NULL, target VARCHAR(255) NOT NULL, race VARCHAR(25) NOT NULL, info VARCHAR(4000) NOT NULL)"
+    var SQL2 = "CREATE TABLE IF NOT EXISTS gb_requests (request_id VARCHAR(16) PRIMARY KEY, completed BOOLEAN NOT NULL, approved BOOLEAN, author VARCHAR(255) NOT NULL, materials VARCHAR(4000) NOT NULL, info VARCHAR(4000) NOT NULL, ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)";
+
     // SQL = "DROP TABLE bounties";
-    conn.query(SQL, function (err) {
+    conn.query(SQL1, function (err) {
         if (err) throw err;
-        console.log("Bounties created")
+        console.log("TABLE CREATED");
+    });
+    conn.query(SQL2, function (err) {
+        if (err) throw err;
+        console.log("TABLE CREATED");
     });
 });
 
@@ -89,7 +95,7 @@ client.on('interactionCreate', async (button) => {
     if (!(access_to_buttons.indexOf(button.user.id) > -1)) {
         console.log("Should get message button reset")
         await button.message.reply("You cannot perform this action!");
-        await i.deferUpdate()
+        await button.deferUpdate()
     }
 
     object_id = button.customId.split('_')[0]
@@ -132,32 +138,14 @@ client.on('interactionCreate', async (button) => {
             await button.update({content: '**Cancelled**', components: []});
         }
     }
-
-    if (button.customId === "reimburse_cancelled") {
-        button.message.components[0].components[0].data.disabled = true;
-        await button.update({ content: '**Denied**', components: [] });
-    }
     if (button.customId === "material_cancelled") {
         button.message.components[0].components[0].data.disabled = true
         await button.update({ content: '**Denied**', components: [] });
-    }
-    // if (button.customId === "bounty_cancelled") {
-    //     button.message.components[0].components[0].data.disabled = true
-    //     await button.update({ content: '**Cancelled**', components: [] });
-    // }
-    if (button.customId === "reimburse_success") {
-        button.message.components[0].components[0].data.disabled = true
-        await button.update({ content: '**Approved**', components: [] });
     }
     if (button.customId === "material_success") {
         button.message.components[0].components[0].data.disabled = true
         await button.update({ content: '**Approved**', components: [] });
     }
-    // if (button.customId === "bounty_success") {
-    //     button.message.components[0].components[0].data.disabled = true
-    //     await button.update({ content: '**Completed**', components: [] });
-    //
-    // }
 });
 
 client.login(token);
