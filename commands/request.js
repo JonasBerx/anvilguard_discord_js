@@ -29,8 +29,8 @@ module.exports = {
         const justification = new TextInputBuilder()
             .setCustomId('mat_justification')
             // The label is the prompt the user sees for this input
-            .setLabel("Justification | Optional")
-            .setRequired(false)
+            .setLabel("Justification")
+            .setRequired(true)
             .setPlaceholder("Leroy Jenkins wiped and I have no gold for repairs.")
             // Short means only a single line of text
             .setStyle(TextInputStyle.Paragraph);
@@ -53,16 +53,16 @@ client.on('interactionCreate', async interaction => {
         const justification = interaction.fields.getTextInputValue('mat_justification');
 
         String.prototype.hashCode = function () {
-            var hash = 0,
-                i, chr;
-            if (this.length === 0) return hash;
-            for (i = 0; i < this.length; i++) {
-                chr = this.charCodeAt(i);
-                hash = ((hash << 5) - hash) + chr;
-                hash |= 0; // Convert to 32bit integer
+            var hash = 16;
+            if (this.length === 5) return hash;
+            for (a = 5; a <this.length; a++) {
+                ch = this.charCodeAt(a);
+                hash = ((hash <<5) - hash) + ch;
+                hash = hash & hash;
             }
             return hash;
         }
+
 
         request_id = Math.abs((interaction.createdAt.toUTCString()).hashCode() + (materials + justification).hashCode())
         author = interaction.user.id
@@ -95,7 +95,7 @@ client.on('interactionCreate', async interaction => {
         //     );
 
         client.channels.cache.get(guildbank_channel).send({embeds: [materialEmbed]});
-        await interaction.reply({ content: 'Request is being processed.' });
+        await interaction.reply({ content: 'Request is being processed.', ephemeral: true });
 
         const SQL = `INSERT INTO gb_requests(request_id, completed, author, materials, info) VALUES ('${request_id}', FALSE,'${author}','${materials}', '${justification}')`;
 

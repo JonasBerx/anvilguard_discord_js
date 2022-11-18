@@ -39,6 +39,7 @@ module.exports = {
         if (approved) {
             return interaction.reply({
                 content:'Request approved.',
+
             });
         }
         if (!approved) {
