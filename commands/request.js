@@ -70,7 +70,7 @@ client.on('interactionCreate', async interaction => {
 
         const materialEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
-            .setAuthor({name:`Request by: ${interaction.user.username}`, iconURL:'https://imgur.com/vYQlnnA.png'})
+            .setAuthor({name:`Request by: ${interaction.member.nickname}`, iconURL:'https://imgur.com/vYQlnnA.png'})
             .setTitle(`Guildbank URL`)
             .setFooter({text: "Loremaster Hendrik", iconURL:'https://i.imgur.com/vYQlnnA.png'})
             .setThumbnail('https://wow.zamimg.com/uploads/blog/images/17231-wow-classic-goldmaking-guide-best-professions-farming-spots-auction-house.jpg')
