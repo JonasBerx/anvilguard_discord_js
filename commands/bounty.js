@@ -98,20 +98,6 @@ client.on('interactionCreate', async interaction => {
             )
             .setFooter({text: `Loremaster Hendrik`, iconURL: 'https://i.imgur.com/vYQlnnA.png'});
 
-
-
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`${bounty_id}_bounty_completed`)
-                    .setLabel('Completed')
-                    .setStyle(ButtonStyle.Success),
-                new ButtonBuilder()
-                    .setCustomId(`${bounty_id}_bounty_cancelled`)
-                    .setLabel('Cancelled')
-                    .setStyle(ButtonStyle.Danger)
-            );
-
         const SQL = `INSERT INTO bounties(bounty_id, completed, author, target, race, info) VALUES ('${bounty_id}', FALSE, '${author}', '${bounty_name}', '${bounty_race}', '${bounty_reward}')`;
 
         pool.getConnection(function (err, conn) {
@@ -122,44 +108,7 @@ client.on('interactionCreate', async interaction => {
             });
         })
 
-
-        client.channels.cache.get(bounty_channel).send({embeds: [bountyEmbed], components: [row]});
-        await interaction.reply({content: 'Bounty has successfully been marked.'});
-
-        const buttonFilter = i => i.customId === 'bounty_success' || i.customId === "bounty_cancelled" && access_to_buttons.includes(interaction.user.id);
-        const collector = client.channels.cache.get(bounty_channel).createMessageComponentCollector({
-            buttonFilter,
-            time: 15000
-        });
-
-        var sql = `UPDATE bounties SET completed = TRUE WHERE bounty_id = '${bounty_id}'`
-
-        collector.on('collect', async i => {
-
-            if (access_to_buttons.indexOf(i.user.id) > -1) {
-                if (i.customId === `${bounty_id}_bounty_success`) {
-                    row.components[0].setDisabled(true);
-                    row.components[1].setDisabled(true);
-
-                    pool.getConnection(function (err, conn) {
-                        if (err) return console.log(err);
-                        conn.query(sql, function (err) {
-                            if (err) throw err;
-                            console.log("Bounty logged in DB")
-                        });
-                    });
-                    await i.update({content: '**Completed**', components: []});
-                }
-                if (i.customId === `${bounty_id}_bounty_cancelled`) {
-                    row.components[0].setDisabled(true);
-                    row.components[1].setDisabled(true);
-                    await i.update({content: '**Cancelled**', components: []});
-                }
-            }
-            if (!(access_to_buttons.indexOf(interaction.user.id) > -1)) {
-                console.log("Should get message blblbl");
-                await i.deferUpdate();
-            }
-        });
+        client.channels.cache.get(bounty_channel).send({embeds: [bountyEmbed]});
+        await interaction.reply({content: `Bounty has successfully been marked. ID: ${bounty_id.toString()}`});
     }
 })

@@ -3,18 +3,13 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('getrequest')
-        .setDescription("Get open requests")
+        .setDescription("Get the status of a request")
         .addStringOption( option =>
             option.setName('id')
                 .setDescription("ID of request")
                 .setRequired(true)
         ),
     async execute(interaction) {
-        if (!interaction.member.roles.cache.some(role => role.name === 'Thane')) {
-            return interaction.reply({
-                content:'You cannot perform this command.',
-            });
-        }
         let request_id = interaction.options.getString('id');
         SQL = `SELECT * FROM gb_requests WHERE request_id = '${request_id}'`;
 

@@ -66,11 +66,15 @@ client.on('interactionCreate', async interaction => {
 
         request_id = Math.abs((interaction.createdAt.toUTCString()).hashCode() + (materials + justification).hashCode())
         author = interaction.user.id
+        member_name = interaction.user.username
+        if (interaction.member.nickname !== null) {
+            member_name = interaction.member.nickname
+        }
 
 
         const materialEmbed = new EmbedBuilder()
             .setColor(0x0099FF)
-            .setAuthor({name:`Request by: ${interaction.member.nickname}`, iconURL:'https://imgur.com/vYQlnnA.png'})
+            .setAuthor({name:`Request by: ${member_name}`, iconURL:'https://imgur.com/vYQlnnA.png'})
             .setTitle(`Guildbank URL`)
             .setFooter({text: "Loremaster Hendrik", iconURL:'https://i.imgur.com/vYQlnnA.png'})
             .setThumbnail('https://wow.zamimg.com/uploads/blog/images/17231-wow-classic-goldmaking-guide-best-professions-farming-spots-auction-house.jpg')
@@ -82,47 +86,17 @@ client.on('interactionCreate', async interaction => {
             )
         .setFooter({text: `Loremaster Hendrik`, iconURL: 'https://i.imgur.com/vYQlnnA.png'});
 
-        // const row = new ActionRowBuilder()
-        //     .addComponents(
-        //         new ButtonBuilder()
-        //             .setCustomId('material_success')
-        //             .setLabel('Approved')
-        //             .setStyle(ButtonStyle.Success),
-        //         new ButtonBuilder()
-        //             .setCustomId('material_cancelled')
-        //             .setLabel('Denied')
-        //             .setStyle(ButtonStyle.Danger)
-        //     );
-
-        client.channels.cache.get(guildbank_channel).send({embeds: [materialEmbed]});
-        await interaction.reply({ content: 'Request is being processed.', ephemeral: true });
-
-        const SQL = `INSERT INTO gb_requests(request_id, completed, author, materials, info) VALUES ('${request_id}', FALSE,'${author}','${materials}', '${justification}')`;
-
+        const SQL = `INSERT INTO gb_requests(request_id, completed, author, materials, info) VALUES (?,?,?,?,?)`;
         pool.getConnection(function (err, conn) {
             if (err) return console.log(err);
-            conn.query(SQL, function (err) {
+            conn.query(SQL, [request_id, false ,author,materials, justification], function (err) {
                 if (err) throw err;
-                console.log("Bounty logged in DB")
+                console.log("Request logged in DB")
             });
         })
 
+        client.channels.cache.get(guildbank_channel).send({embeds: [materialEmbed]});
+        await interaction.reply({ content: `Request is being processed. ID: ${request_id.toString()}`, ephemeral: true });
 
-        // const buttonFilter = i => i.customId === 'material_success' || i.customId==="material_cancelled" && i.user.id in access_to_buttons;
-        // const collector = client.channels.cache.get(guildbank_channel).createMessageComponentCollector({ buttonFilter, time: 15000 });
-
-        // collector.on('collect', async i => {
-        //     console.log(i.user.roles)
-        //     if (i.customId === 'material_success' && access_to_buttons.includes(interaction.user.id)) {
-        //         row.components[0].setDisabled(true);
-        //         row.components[1].setDisabled(true);
-        //         await i.update({ content: '**Approved**', components: [] });
-        //     }
-        //     if (i.customId === 'material_cancelled' && access_to_buttons.includes(interaction.user.id)) {
-        //         row.components[0].setDisabled(true);
-        //         row.components[1].setDisabled(true);
-        //         await i.update({ content: '**Denied**', components: [] });
-        //     }
-        // });
     }
 })

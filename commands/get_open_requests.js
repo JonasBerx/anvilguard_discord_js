@@ -5,7 +5,7 @@ module.exports = {
         .setName('openrequests')
         .setDescription("Get open requests"),
     async execute(interaction) {
-        if (!interaction.member.roles.cache.some(role => role.name === 'Thane')) {
+        if (!interaction.member.roles.cache.some(role => role.name === 'Thane' || role.name==='High Thane')) {
             return interaction.reply({
                 content:'You cannot perform this command.',
             });

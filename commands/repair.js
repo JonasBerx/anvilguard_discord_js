@@ -10,7 +10,11 @@ module.exports = {
         .setName("reimburse")
         .setDescription("Request a reimbursement for costs."),
     async execute(interaction) {
-
+        if (!interaction.member.roles.cache.some(role => role.name === 'Thane' || role.name==='High Thane')) {
+            return interaction.reply({
+                content:'You cannot perform this command.',
+            });
+        }
         const modal = new ModalBuilder()
             .setCustomId('reimburseModal')
             .setTitle('Reimbursement Invoice');

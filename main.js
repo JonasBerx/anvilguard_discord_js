@@ -22,7 +22,10 @@ pool.getConnection(function(err, conn) {
     console.log(`MySQL has been connected!`);
 
     var SQL1 = "CREATE TABLE IF NOT EXISTS bounties (bounty_id VARCHAR(16) PRIMARY KEY, completed BOOLEAN NOT NULL, author VARCHAR(255) NOT NULL, target VARCHAR(255) NOT NULL, race VARCHAR(25) NOT NULL, info VARCHAR(4000) NOT NULL)"
-    var SQL2 = "CREATE TABLE IF NOT EXISTS gb_requests (request_id VARCHAR(16) PRIMARY KEY, completed BOOLEAN NOT NULL, approved BOOLEAN, author VARCHAR(255) NOT NULL, materials VARCHAR(4000) NOT NULL, info VARCHAR(4000) NOT NULL, ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)";
+    var SQL2 = "CREATE TABLE IF NOT EXISTS gb_requests (request_id VARCHAR(16) PRIMARY KEY, completed BOOLEAN NOT NULL, approved BOOLEAN, author VARCHAR(255) NOT NULL, materials text NOT NULL, info text NOT NULL, ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)";
+
+    // var SQL1 ="ALTER TABLE gb_requests MODIFY materials text"
+    // var SQL2 ="ALTER TABLE gb_requests MODIFY info text"
 
     // SQL = "DROP TABLE bounties";
     conn.query(SQL1, function (err) {
@@ -76,18 +79,35 @@ client.on('guildMemberAdd', async member => {
 });
 
 client.on('interactionCreate', async interaction => {
-    if (!interaction.isChatInputCommand()) return;
-
-    const command = client.commands.get(interaction.commandName);
-
-    if (!command) return;
-
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    if (interaction.isAutocomplete()) {
+        const command = client.commands.get(interaction.commandName);
+        if (!command) {
+            console.error(`No command matching ${interaction.commandName} was found.`);
+            return;
+        }
+        try {
+            await command.autocomplete(interaction);
+        } catch (error) {
+            console.error(error);
+        }
     }
+    if (interaction.isChatInputCommand()) {
+        const command = client.commands.get(interaction.commandName);
+
+        if (!command) {
+            console.error(`No command matching ${interaction.commandName} was found.`);
+            return;
+        }
+
+
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
+    }
+
 });
 
 client.on('interactionCreate', async (button) => {

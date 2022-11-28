@@ -2,32 +2,32 @@ const { SlashCommandBuilder } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('markrequest')
-        .setDescription("Update a GB request status")
+        .setName('markbounty')
+        .setDescription("Update a bounty status")
         .addStringOption( option =>
             option.setName('id')
-                .setDescription("ID of request to be marked")
+                .setDescription("ID of bounty to be marked")
                 .setRequired(true)
-            )
+        )
         .addBooleanOption(option =>
             option.setName('approved')
-                .setDescription('Approved or Denied?')
+                .setDescription('Completed?')
                 .setRequired(true)
         ),
     async execute(interaction) {
-        if (!interaction.member.roles.cache.some(role => role.name === 'Thane')) {
+        if (!interaction.member.roles.cache.some(role => role.name === 'Thane' || role.name==='High Thane')) {
             return interaction.reply({
                 content:'You cannot perform this command.',
             });
         }
-        let request_id = interaction.options.getString('id');
+        let bounty_id = interaction.options.getString('id');
         let approved = interaction.options.getBoolean('approved')
         let SQL = ""
         if (approved) {
-            SQL = `UPDATE gb_requests SET approved = TRUE, completed = TRUE WHERE request_id = '${request_id}'`;
+            SQL = `UPDATE bounties SET completed = TRUE, completed = TRUE WHERE bounty_id = '${bounty_id}'`;
         }
         if (!approved) {
-            SQL = `UPDATE gb_requests SET approved = FALSE, completed = TRUE WHERE request_id = '${request_id}'`;
+            SQL = `UPDATE bounties SET completed = FALSE, completed = TRUE WHERE bounty_id = '${bounty_id}'`;
         }
         pool.getConnection(function (err, conn) {
             if (err) return console.log(err);
@@ -38,13 +38,13 @@ module.exports = {
         });
         if (approved) {
             return interaction.reply({
-                content:`Request approved. ${request_id}`,
+                content:`Bounty marked as completed. ${bounty_id}`,
 
             });
         }
         if (!approved) {
             return interaction.reply({
-                content:`Request denied. ${request_id}`,
+                content:`Bounty has been removed. ${bounty_id}`,
             });
         }
     },

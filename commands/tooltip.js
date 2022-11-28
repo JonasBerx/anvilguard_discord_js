@@ -27,11 +27,18 @@ module.exports = {
                 .setDescription("The name of the item you're looking for")
                 .setRequired(true)
                 .setAutocomplete(true)),
+    async autocomplete(interaction) {
+        const focusedValue = interaction.options.getFocused()
+        const filtered = items.filter((i) => (i.name).toLowerCase().includes(focusedValue.toLowerCase()))
+        await interaction.respond(
+            filtered.map(choice => ({ name: choice.name, value: choice.name })),
+        );
+    },
     async execute(interaction) {
         const item = interaction.options.getString("item-name")
 
         if (item.toLowerCase() === 'voidwards') return await interaction.reply({content:"You can Voidwards by the icons or at the website graphics"})
-        // TODO - Improve search algorithm of the database to allow a list of items that could match if the exact name is not found.
+
         const found_item = items.filter((i) => (i.name).toLowerCase().includes(item.toLowerCase()))[0]
         if (!found_item) return await interaction.reply({content:"Couldn't find the requested item. Please try again with a more correct parameter", ephemeral: true})
         let tooltip = found_item.tooltip;
